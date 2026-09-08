@@ -78,7 +78,7 @@
     background-repeat: no-repeat;
   }
   .logo-box {
-    width: 15%;
+    width: 18%; /* Aumentado para que el escudo sea un poco más grande */
     border-right: 3px solid var(--navy);
     flex-shrink: 0;
   }
@@ -93,9 +93,9 @@
     text-align: center;
     padding: 6px 10px;
   }
-  .title-box .t1 { font-size: 13px; font-weight: 700; margin: 0 0 2px; }
-  .title-box .t2 { font-size: 15px; font-weight: 700; margin: 0 0 2px; }
-  .title-box .t3 { font-size: 12.5px; font-style: italic; font-family: "Brush Script MT", cursive, Georgia, serif; margin: 0; }
+  .title-box .t1 { font-size: 15px; font-weight: 700; margin: 0 0 2px; } /* Aumentado */
+  .title-box .t2 { font-size: 18px; font-weight: 700; margin: 0 0 2px; } /* Aumentado */
+  .title-box .t3 { font-size: 14.5px; font-style: italic; font-family: "Brush Script MT", cursive, Georgia, serif; margin: 0; } /* Aumentado */
 
   .right-box {
     width: 22%;
@@ -106,6 +106,7 @@
   .badge-box {
     height: 105px;
     border-bottom: 3px solid var(--navy);
+    background-size: 75%; /* Ajustado para que la imagen sea un poco más pequeña */
   }
   .date-box {
     flex: 1;
@@ -241,9 +242,9 @@
   }
 
   @media (max-width: 600px) {
-    .title-box .t1 { font-size: 10.5px; }
-    .title-box .t2 { font-size: 12px; }
-    .title-box .t3 { font-size: 10px; }
+    .title-box .t1 { font-size: 12px; } /* Aumentado */
+    .title-box .t2 { font-size: 14px; } /* Aumentado */
+    .title-box .t3 { font-size: 12px; } /* Aumentado */
     .lbl-nombre, .lbl-curso, .info-row input, .firma-row .firma-label, .firma-row input { font-size: 10.5px; }
   }
 </style>
