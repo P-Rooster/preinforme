@@ -561,9 +561,17 @@
         if(renderedPages > 20) break;
       }
 
+      // NOMBRAMIENTO DEL ARCHIVO PDF
       const nombre = document.getElementById('nombre').value.trim();
-      const filename = 'pre-informe' + (nombre ? '-' + nombre.replace(/\s+/g,'_').toLowerCase() : '') + '.pdf';
+      const fecha = document.getElementById('fecha').value.trim();
+      
+      let filenameParts = ['Preinforme'];
+      if (nombre) filenameParts.push(nombre);
+      if (fecha) filenameParts.push(fecha);
+      
+      const filename = filenameParts.join(' ') + '.pdf';
       pdf.save(filename);
+
     }catch(err){
       alert('Ocurrió un error al generar el PDF. Intenta nuevamente.');
       console.error(err);
