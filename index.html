@@ -78,7 +78,7 @@
     background-repeat: no-repeat;
   }
   .logo-box {
-    width: 18%; /* Aumentado para que el escudo sea un poco más grande */
+    width: 18%; 
     border-right: 3px solid var(--navy);
     flex-shrink: 0;
   }
@@ -93,9 +93,9 @@
     text-align: center;
     padding: 6px 10px;
   }
-  .title-box .t1 { font-size: 15px; font-weight: 700; margin: 0 0 2px; } /* Aumentado */
-  .title-box .t2 { font-size: 18px; font-weight: 700; margin: 0 0 2px; } /* Aumentado */
-  .title-box .t3 { font-size: 14.5px; font-style: italic; font-family: "Brush Script MT", cursive, Georgia, serif; margin: 0; } /* Aumentado */
+  .title-box .t1 { font-size: 15px; font-weight: 700; margin: 0 0 2px; } 
+  .title-box .t2 { font-size: 18px; font-weight: 700; margin: 0 0 2px; } 
+  .title-box .t3 { font-size: 14.5px; font-style: italic; font-family: "Brush Script MT", cursive, Georgia, serif; margin: 0; } 
 
   .right-box {
     width: 22%;
@@ -106,7 +106,7 @@
   .badge-box {
     height: 105px;
     border-bottom: 3px solid var(--navy);
-    background-size: 75%; /* Ajustado para que la imagen sea un poco más pequeña */
+    background-size: 75%; 
   }
   .date-box {
     flex: 1;
@@ -242,9 +242,9 @@
   }
 
   @media (max-width: 600px) {
-    .title-box .t1 { font-size: 12px; } /* Aumentado */
-    .title-box .t2 { font-size: 14px; } /* Aumentado */
-    .title-box .t3 { font-size: 12px; } /* Aumentado */
+    .title-box .t1 { font-size: 12px; } 
+    .title-box .t2 { font-size: 14px; } 
+    .title-box .t3 { font-size: 12px; } 
     .lbl-nombre, .lbl-curso, .info-row input, .firma-row .firma-label, .firma-row input { font-size: 10.5px; }
   }
 </style>
@@ -410,9 +410,111 @@
     const originalLabel = btn.textContent;
     btn.textContent = 'Generando PDF...';
     btn.disabled = true;
+
+    // Variables temporales
+    const tempDivs = [];
+    const tempPdfEls = [];
+    const sheet = document.getElementById('sheet');
+    const ruledWrapper = document.querySelector('.ruled-wrapper');
+    const originalPaddingBottom = sheet.style.paddingBottom;
+
     try{
-      const sheet = document.getElementById('sheet');
+      // 1. Reemplazar inputs por divs (soluciona corte de texto en html2canvas)
+      const inputs = sheet.querySelectorAll('input');
+      inputs.forEach(inp => {
+        const div = document.createElement('div');
+        const comp = window.getComputedStyle(inp);
+        div.style.cssText = comp.cssText;
+        div.style.display = 'flex';
+        div.style.alignItems = 'center';
+        div.style.fontFamily = comp.fontFamily;
+        div.style.fontSize = comp.fontSize;
+        div.style.fontWeight = comp.fontWeight;
+        div.style.color = comp.color;
+        div.style.boxSizing = 'border-box';
+        div.style.whiteSpace = 'nowrap';
+        div.style.overflow = 'hidden';
+        
+        let val = inp.value;
+        if (inp.type === 'date' && val) {
+          const parts = val.split('-');
+          if (parts.length === 3) val = `${parts[2]}/${parts[1]}/${parts[0].slice(2)}`;
+        }
+        div.textContent = val;
+        
+        inp.parentNode.insertBefore(div, inp);
+        inp.style.display = 'none';
+        tempDivs.push({ inp, div });
+      });
+
+      // 2. Manejo visual fluido del salto de página
+      ruledWrapper.style.display = 'none';
+
+      const linesPage1 = 27; // Corta visualmente en la penúltima línea
+      const linesPage2 = 24; // Resto del texto
+      const lineHeightPx = 27;
       
+      const compText = window.getComputedStyle(situacion);
+
+      // --- Caja temporal para la Página 1 ---
+      const tempWrap1 = document.createElement('div');
+      tempWrap1.className = 'ruled-wrapper';
+      tempWrap1.style.height = (linesPage1 * lineHeightPx) + 'px';
+      tempWrap1.style.overflow = 'hidden';
+      tempWrap1.style.position = 'relative';
+      tempWrap1.style.backgroundImage = 'linear-gradient(to bottom, transparent 26px, #000 26px)';
+      tempWrap1.style.backgroundSize = '100% 27px';
+
+      const inner1 = document.createElement('div');
+      inner1.style.fontFamily = compText.fontFamily;
+      inner1.style.fontSize = compText.fontSize;
+      inner1.style.lineHeight = compText.lineHeight;
+      inner1.style.padding = compText.padding;
+      inner1.style.whiteSpace = compText.whiteSpace;
+      inner1.style.overflowWrap = compText.overflowWrap;
+      inner1.style.boxSizing = 'border-box';
+      inner1.style.width = '100%';
+      inner1.style.height = 'auto'; // Permitimos que su altura sea libre
+      
+      if (situacion.innerText.trim() === '') {
+        inner1.textContent = situacion.getAttribute('data-placeholder');
+        inner1.style.color = '#9a9a9a';
+        inner1.style.fontStyle = 'italic';
+      } else {
+        inner1.innerHTML = situacion.innerHTML; // Clon exacto de todo
+      }
+      tempWrap1.appendChild(inner1);
+
+      // --- Clonar el Encabezado para la Página 2 ---
+      const headerOriginal = document.querySelector('.header');
+      const headerClone = headerOriginal.cloneNode(true);
+      headerClone.style.marginTop = '44px'; // Distancia matemática para el corte exacto
+
+      // --- Caja temporal para la Página 2 (Texto desplazado) ---
+      const tempWrap2 = document.createElement('div');
+      tempWrap2.className = 'ruled-wrapper';
+      tempWrap2.style.height = (linesPage2 * lineHeightPx) + 'px';
+      tempWrap2.style.overflow = 'hidden';
+      tempWrap2.style.position = 'relative';
+      tempWrap2.style.borderTop = '1px solid #000';
+      tempWrap2.style.backgroundImage = 'linear-gradient(to bottom, transparent 26px, #000 26px)';
+      tempWrap2.style.backgroundSize = '100% 27px';
+
+      const inner2 = inner1.cloneNode(true);
+      // El truco de magia: Subimos el texto de la segunda caja para que visualmente empiece en la línea 28
+      inner2.style.transform = `translateY(-${linesPage1 * lineHeightPx}px)`;
+      tempWrap2.appendChild(inner2);
+
+      // Inyectar en el documento
+      ruledWrapper.parentNode.insertBefore(tempWrap1, ruledWrapper.nextSibling);
+      ruledWrapper.parentNode.insertBefore(headerClone, tempWrap1.nextSibling);
+      ruledWrapper.parentNode.insertBefore(tempWrap2, headerClone.nextSibling);
+      
+      tempPdfEls.push(tempWrap1, headerClone, tempWrap2);
+
+      sheet.style.paddingBottom = '40px';
+
+      // 3. Captura y generación de PDF
       const originalWidth = sheet.style.width;
       const originalMaxWidth = sheet.style.maxWidth;
       sheet.style.width = '816px';
@@ -466,6 +568,16 @@
       alert('Ocurrió un error al generar el PDF. Intenta nuevamente.');
       console.error(err);
     }finally{
+      // 4. Limpiar temporalidades y restaurar estado inicial
+      tempPdfEls.forEach(el => el.remove());
+      ruledWrapper.style.display = '';
+      sheet.style.paddingBottom = originalPaddingBottom;
+      
+      tempDivs.forEach(({ inp, div }) => {
+        div.remove();
+        inp.style.display = '';
+      });
+
       btn.textContent = originalLabel;
       btn.disabled = false;
     }
